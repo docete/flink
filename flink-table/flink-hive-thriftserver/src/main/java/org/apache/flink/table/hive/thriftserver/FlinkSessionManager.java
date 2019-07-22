@@ -18,7 +18,13 @@
 
 package org.apache.flink.table.hive.thriftserver;
 
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.EnvironmentSettings;
+import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -55,6 +61,30 @@ public class FlinkSessionManager extends SessionManager {
 			super.openSession(protocol, username, password, ipAddress, sessionConf, withImpersonation, delegationToken);
 		final HiveSession session = super.getSession(sessionHandle);
 
+		// TODO: How to differentiate batch / streaming, now only support batch?
+		// TODO: How to differentiate flink planner / blink planner, now only support blink planner?
+		// TODO: How to support hive catalog? Should we support multiple catalogs? now only support one hive metastore as hive catalog?
+		final EnvironmentSettings settings =
+			EnvironmentSettings
+				.newInstance()
+				.useBlinkPlanner()
+				.inBatchMode()
+				.build();
+		final TableEnvironment ctx = TableEnvironment.create(settings);
+		if (sessionConf != null && sessionConf.containsKey("use:database")) {
+			final String[] database = sessionConf.get("use:database").split(":", 2);
+			if (database.length == 2) {
+				final String useDatabase = String.format("user %s.%s", database[0], database[1]);
+				ctx.sqlUpdate(useDatabase);
+			}
+		}
+		operationManager.sessionToContexts.put(sessionHandle, ctx);
 		return sessionHandle;
+	}
+
+	@Override
+	public void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
+		super.closeSession(sessionHandle);
+		operationManager.sessionToContexts.remove(sessionHandle);
 	}
 }
