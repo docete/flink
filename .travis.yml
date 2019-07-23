@@ -73,18 +73,12 @@ jdk: "openjdk8"
 jobs:
   include:
     # main profile
-    - if: type in (pull_request, push)
-      stage: compile
+    - stage: compile
       script: ./tools/travis_controller.sh compile
       env: PROFILE="-Dhadoop.version=2.8.3 -Pinclude-kinesis -Dinclude_hadoop_aws -Dscala-2.11"
       name: compile
 
-    - if: type in (pull_request, push)
-      stage: cleanup
-      script: ./tools/travis_controller.sh cleanup
-      env: PROFILE="-Dhadoop.version=2.8.3 -Pinclude-kinesis -Dinclude_hadoop_aws -Dscala-2.11"
-      name: cleanup
-   
+  
     # loop misc for 5 times    
     - script: ./tools/travis/nightly.sh split_misc.sh
       env: PROFILE="-Dinclude-hadoop -Dhadoop.version=2.8.3 -Dscala-2.11 -De2e-metrics -Dinclude-kinesis"
@@ -106,4 +100,8 @@ jobs:
       env: PROFILE="-Dinclude-hadoop -Dhadoop.version=2.8.3 -Dscala-2.11 -De2e-metrics -Dinclude-kinesis"
       name: misc
 
-
+    - stage: cleanup
+      script: ./tools/travis_controller.sh cleanup
+      env: PROFILE="-Dhadoop.version=2.8.3 -Pinclude-kinesis -Dinclude_hadoop_aws -Dscala-2.11"
+      name: cleanup
+ 
