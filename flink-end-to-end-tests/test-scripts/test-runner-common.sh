@@ -36,7 +36,8 @@ function run_test {
     printf "==============================================================================\n"
 
     # used to randomize created directories
-    export TEST_DATA_DIR=$TEST_INFRA_DIR/temp-test-directory-$(date +%S%N)
+    uuid=`cat /dev/urandom | env LC_CTYPE=C tr -cd 'a-f0-9' | head -c 8`
+    export TEST_DATA_DIR=$TEST_INFRA_DIR/temp-test-directory-$(date +%S%N)-${uuid}
     echo "TEST_DATA_DIR: $TEST_DATA_DIR"
 
     backup_flink_dir
