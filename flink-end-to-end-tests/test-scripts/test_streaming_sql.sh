@@ -30,9 +30,10 @@ $FLINK_DIR/bin/taskmanager.sh start
 $FLINK_DIR/bin/taskmanager.sh start
 
 echo "Checking ${TEST_DATA_DIR}"
-ls ${TEST_DATA_DIR}
+ls -alth ${TEST_DATA_DIR}
 mkdir -p ${TEST_DATA_DIR}/out/result
 $FLINK_DIR/bin/flink run -p 4 $TEST_PROGRAM_JAR -outputPath file://${TEST_DATA_DIR}/out/result
+ls -alth ${TEST_DATA_DIR}/out/result
 
 function sql_cleanup() {
   stop_cluster
