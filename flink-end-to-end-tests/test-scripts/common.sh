@@ -373,7 +373,6 @@ function check_logs_for_exceptions {
     cat $FLINK_DIR/log/*
     EXIT_CODE=1
   else
-    cat $FLINK_DIR/log/*
     echo "No exceptions in log files."
   fi
 }
@@ -394,7 +393,6 @@ function check_logs_for_non_empty_out_files {
     cat $FLINK_DIR/log/*.out
     EXIT_CODE=1
   else
-    cat $FLINK_DIR/log/*.out
     echo "No non-empty .out files."
   fi
 }

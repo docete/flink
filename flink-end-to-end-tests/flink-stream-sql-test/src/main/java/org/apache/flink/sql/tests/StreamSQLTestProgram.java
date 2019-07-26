@@ -269,7 +269,6 @@ public class StreamSQLTestProgram {
 			while (ms < durationMs) {
 				synchronized (ctx.getCheckpointLock()) {
 					for (int i = 0; i < numKeys; i++) {
-						System.out.println(String.format("%d,%d", i, ms + offsetMS));
 						ctx.collect(Row.of(i, ms + offsetMS, "Some payload..."));
 					}
 					ms += sleepMs;
