@@ -33,7 +33,8 @@ before_cache:
   - rm -rf $HOME/.m2/repository/org/apache/flink/
 
 before_install:
-  - export TZ='Asia/Shanghai'
+  - export TZ=Asia/Shanghai
+  - date
 
 install: true
 
@@ -80,30 +81,12 @@ jobs:
       script: ./tools/travis_controller.sh compile
       env: PROFILE="-Dhadoop.version=2.8.3 -Pinclude-kinesis -Dinclude_hadoop_aws -Dscala-2.11"
       name: compile
-
   
-    # loop misc for 5 times    
     - stage: test
       script: ./tools/travis/nightly.sh split_misc.sh
       env: PROFILE="-Dinclude-hadoop -Dhadoop.version=2.8.3 -Dscala-2.11 -De2e-metrics -Dinclude-kinesis"
       name: misc
-
-    - script: ./tools/travis/nightly.sh split_misc.sh
-      env: PROFILE="-Dinclude-hadoop -Dhadoop.version=2.8.3 -Dscala-2.11 -De2e-metrics -Dinclude-kinesis"
-      name: misc
-
-    - script: ./tools/travis/nightly.sh split_misc.sh
-      env: PROFILE="-Dinclude-hadoop -Dhadoop.version=2.8.3 -Dscala-2.11 -De2e-metrics -Dinclude-kinesis"
-      name: misc
-
-    - script: ./tools/travis/nightly.sh split_misc.sh
-      env: PROFILE="-Dinclude-hadoop -Dhadoop.version=2.8.3 -Dscala-2.11 -De2e-metrics -Dinclude-kinesis"
-      name: misc
-
-    - script: ./tools/travis/nightly.sh split_misc.sh
-      env: PROFILE="-Dinclude-hadoop -Dhadoop.version=2.8.3 -Dscala-2.11 -De2e-metrics -Dinclude-kinesis"
-      name: misc
-
+    
     - stage: cleanup
       script: ./tools/travis_controller.sh cleanup
       env: PROFILE="-Dhadoop.version=2.8.3 -Pinclude-kinesis -Dinclude_hadoop_aws -Dscala-2.11"
