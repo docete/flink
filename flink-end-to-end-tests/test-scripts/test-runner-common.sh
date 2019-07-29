@@ -102,11 +102,11 @@ function cleanup_proc {
 
 # Cleans up all temporary folders and files
 function cleanup_tmp_files {
-    rm ${FLINK_DIR}/log/*
-    echo "Deleted all files under ${FLINK_DIR}/log/"
+    #rm ${FLINK_DIR}/log/*
+    #echo "Deleted all files under ${FLINK_DIR}/log/"
 
-    rm -rf ${TEST_DATA_DIR} 2> /dev/null
-    echo "Deleted ${TEST_DATA_DIR}"
+    #rm -rf ${TEST_DATA_DIR} 2> /dev/null
+    #echo "Deleted ${TEST_DATA_DIR}"
 }
 
 # Shuts down the cluster and cleans up all temporary folders and files.

@@ -228,7 +228,7 @@ public class StreamSQLTestProgram {
 				new RowtimeAttributeDescriptor(
 					"rowtime",
 					new ExistingField("ts"),
-					new BoundedOutOfOrderTimestamps(60 * 2000)));
+					new BoundedOutOfOrderTimestamps(100)));
 		}
 
 		@Override
