@@ -32,6 +32,9 @@ cache:
 before_cache:
   - rm -rf $HOME/.m2/repository/org/apache/flink/
 
+before_install:
+  - export TZ='Asia/Shanghai'
+
 install: true
 
 language: java

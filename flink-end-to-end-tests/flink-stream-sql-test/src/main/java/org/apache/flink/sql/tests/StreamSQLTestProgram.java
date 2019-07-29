@@ -157,7 +157,7 @@ public class StreamSQLTestProgram {
 
 		resultStream
 			// inject a KillMapper that forwards all records but terminates the first execution attempt
-			.map(new KillMapper()).setParallelism(1)
+			// .map(new KillMapper()).setParallelism(1)
 			// add sink function
 			.addSink(sink).setParallelism(1);
 
