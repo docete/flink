@@ -28,6 +28,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
+/**
+ * The main entry point for the Flink SQL port of HiveServer2.
+ */
 public class HiveThrfitServer2 extends HiveServer2 implements ReflectedCompositeService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(HiveThrfitServer2.class);

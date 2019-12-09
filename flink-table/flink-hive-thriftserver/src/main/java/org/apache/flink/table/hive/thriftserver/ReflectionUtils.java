@@ -22,15 +22,23 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+/**
+ * Utils for Reflection.
+ */
 public class ReflectionUtils {
 
-	public static void setSuperField(Object obj, String fieldName, Object fieldValue)
-	  throws RuntimeException {
+	public static void setSuperField(
+			Object obj,
+			String fieldName,
+			Object fieldValue) throws RuntimeException {
 		setAncestorField(obj, 1, fieldName, fieldValue);
 	}
 
-	public static void setAncestorField(Object obj, int level, String fieldName, Object fieldValue)
-	  throws RuntimeException {
+	public static void setAncestorField(
+			Object obj,
+			int level,
+			String fieldName,
+			Object fieldValue) throws RuntimeException {
 		try {
 			Class<?> ancestor = findNthAncestor(obj.getClass(), level);
 			Field field = ancestor.getDeclaredField(fieldName);
@@ -41,13 +49,14 @@ public class ReflectionUtils {
 		}
 	}
 
-	public static <T> T getSupperField(Object obj, String fieldName)
-	  throws RuntimeException {
+	public static <T> T getSupperField(Object obj, String fieldName) throws RuntimeException {
 		return getAncestorField(obj, 1, fieldName);
 	}
 
-	public static <T> T getAncestorField(Object obj, int level, String fieldName)
-	  throws RuntimeException {
+	public static <T> T getAncestorField(
+			Object obj,
+			int level,
+			String fieldName) throws RuntimeException {
 		try {
 			Class<?> ancestor = findNthAncestor(obj.getClass(), level);
 			Field field = ancestor.getDeclaredField(fieldName);
@@ -58,8 +67,12 @@ public class ReflectionUtils {
 		}
 	}
 
-	public static void invoke(Class<?> clazz, Object obj, String methodName, Class<?>[] types, Object[] values)
-	  throws RuntimeException {
+	public static void invoke(
+			Class<?> clazz,
+			Object obj,
+			String methodName,
+			Class<?>[] types,
+			Object[] values) throws RuntimeException {
 		try {
 			Method method = clazz.getDeclaredMethod(methodName, types);
 			method.setAccessible(true);

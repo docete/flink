@@ -20,7 +20,7 @@ package org.apache.flink.table.hive.thriftserver;
 
 import org.apache.flink.table.api.TableConfig;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.delegation.Planner;
+
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -39,6 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Flink OperationManager.
+ */
 public class FlinkOperationManager extends OperationManager {
 
 	private static final Logger LOG = LoggerFactory.getLogger(HiveThrfitServer2.class);
@@ -60,7 +63,6 @@ public class FlinkOperationManager extends OperationManager {
 		// TODO: update TableConfig
 		final boolean runInBackground =
 			runAsync && conf.getConfiguration().getBoolean(HiveConfigOptions.HIVE_THRIFT_SERVER_ASYNC);
-
 
 		// TODO: differentiate DDL, DML, DQL and other statement(SET command), only support DQL now.
 		final ExecuteStatementOperation operation = new FlinkExecuteStatementOperation(parentSession, statement, confOverlay, runAsync, ctx);

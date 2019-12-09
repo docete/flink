@@ -24,26 +24,29 @@ import org.apache.hive.service.Service;
 
 import java.util.List;
 
+/**
+ * Reflected Composite Service.
+ */
 public interface ReflectedCompositeService {
 	default void initCompositeService(HiveConf hiveConf) throws RuntimeException {
 
 		final List<Service> services = ReflectionUtils.getAncestorField(this, 2, "serviceList");
-		services.stream().forEach((service -> service.init(hiveConf)));
+		services.forEach((service -> service.init(hiveConf)));
 
-		final Class<?>[] STATES = { Service.STATE.class };
-		final Object[] NOTINITED = { Service.STATE.NOTINITED };
-		final Object[] INITED = { Service.STATE.INITED };
+		final Class<?>[] status = { Service.STATE.class };
+		final Object[] notinited = { Service.STATE.NOTINITED };
+		final Object[] inited = { Service.STATE.INITED };
 
 		ReflectionUtils.invoke(
 			AbstractService.class,
 			this,
 			"ensureCurrentState",
-			STATES, NOTINITED);
+			status, notinited);
 		ReflectionUtils.setAncestorField(this, 3, "hiveConf", hiveConf);
 		ReflectionUtils.invoke(
 			AbstractService.class,
 			this,
 			"changeState",
-			STATES, INITED);
+			status, inited);
 	}
 }

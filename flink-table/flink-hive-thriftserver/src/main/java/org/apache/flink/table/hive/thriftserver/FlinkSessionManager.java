@@ -18,13 +18,10 @@
 
 package org.apache.flink.table.hive.thriftserver;
 
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -34,6 +31,9 @@ import org.apache.hive.service.server.HiveServer2;
 
 import java.util.Map;
 
+/**
+ * Flink SessionManager.
+ */
 public class FlinkSessionManager extends SessionManager {
 
 	private FlinkOperationManager operationManager = new FlinkOperationManager();
@@ -50,13 +50,13 @@ public class FlinkSessionManager extends SessionManager {
 
 	@Override
 	public SessionHandle openSession(
-	  TProtocolVersion protocol,
-	  String username,
-	  String password,
-	  String ipAddress,
-	  Map<String, String> sessionConf,
-	  boolean withImpersonation,
-	  String delegationToken) throws HiveSQLException {
+			TProtocolVersion protocol,
+			String username,
+			String password,
+			String ipAddress,
+			Map<String, String> sessionConf,
+			boolean withImpersonation,
+			String delegationToken) throws HiveSQLException {
 		final SessionHandle sessionHandle =
 			super.openSession(protocol, username, password, ipAddress, sessionConf, withImpersonation, delegationToken);
 		final HiveSession session = super.getSession(sessionHandle);

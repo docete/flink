@@ -22,6 +22,9 @@ import org.apache.flink.configuration.ConfigOption;
 
 import static org.apache.flink.configuration.ConfigOptions.key;
 
+/**
+ * Hive configurations.
+ */
 public class HiveConfigOptions {
 	public static final ConfigOption<Boolean> HIVE_THRIFT_SERVER_ASYNC =
 			key("sql.hive.thriftServer.async")

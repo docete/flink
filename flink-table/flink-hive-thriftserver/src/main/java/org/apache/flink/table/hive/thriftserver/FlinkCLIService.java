@@ -22,6 +22,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.server.HiveServer2;
 
+/**
+ * Flink CLIService.
+ */
 public class FlinkCLIService extends CLIService implements ReflectedCompositeService {
 
 	private final HiveServer2 hiveServer2;

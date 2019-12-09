@@ -28,12 +28,13 @@ import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.calcite.FlinkTypeFactory;
-import org.apache.flink.table.sinks.CollectRowTableSink;
-import org.apache.flink.table.sinks.CollectTableSink;
+import org.apache.flink.table.planner.calcite.FlinkTypeFactory;
+import org.apache.flink.table.planner.sinks.CollectRowTableSink;
+import org.apache.flink.table.planner.sinks.CollectTableSink;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.AbstractID;
+
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.shims.Utils;
@@ -60,6 +61,9 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Flink ExecuteStatementOperation for DQLs, DMLs and DDLs.
+ */
 public class FlinkExecuteStatementOperation extends ExecuteStatementOperation {
 
 	private static final Logger LOG = LoggerFactory.getLogger(FlinkExecuteStatementOperation.class);
@@ -74,11 +78,11 @@ public class FlinkExecuteStatementOperation extends ExecuteStatementOperation {
 	private Iterator<Row> iter;
 
 	public FlinkExecuteStatementOperation(
-	  HiveSession parentSession,
-	  String statement,
-	  Map<String, String> confOverlay,
-	  Boolean runInBackground,
-	  TableEnvironment sqlContext) {
+			HiveSession parentSession,
+			String statement,
+			Map<String, String> confOverlay,
+			Boolean runInBackground,
+			TableEnvironment sqlContext) {
 		super(parentSession, statement, confOverlay, runInBackground);
 		this.sqlContext = sqlContext;
 	}
