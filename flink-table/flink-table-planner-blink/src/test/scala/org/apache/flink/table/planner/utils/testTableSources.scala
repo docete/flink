@@ -50,6 +50,10 @@ import java.io.{File, FileOutputStream, OutputStreamWriter}
 import java.util
 import java.util.{Collections, function, ArrayList => JArrayList, List => JList, Map => JMap}
 
+import org.apache.flink.table.utils.TableSchemaUtils
+
+import org.apache.flink.table.descriptors.Schema.SCHEMA
+
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -710,6 +714,49 @@ class TestDataTypeTableSource(
   override def getProducedDataType: DataType = tableSchema.toRowDataType
 
   override def getTableSchema: TableSchema = tableSchema
+}
+
+class TestDataTypeTableSourceFactory extends TableSourceFactory[Row] {
+
+  override def requiredContext(): JMap[String, String] = {
+    val context = new util.HashMap[String, String]()
+    context.put(CONNECTOR_TYPE, "TestDataTypeTableSource")
+    context
+  }
+
+  override def supportedProperties(): JList[String] = {
+    val supported = new util.ArrayList[String]()
+    supported.add("*")
+    supported
+  }
+
+  override def createTableSource(properties: JMap[String, String]): TableSource[Row] = {
+    val descriptorProperties = new DescriptorProperties
+    descriptorProperties.putProperties(properties)
+//    val tableSchema = TableSchemaUtils.getPhysicalSchema(
+//      descriptorProperties.getTableSchema(SCHEMA))
+    // Use the tableSchema in the companion object to keep the actual conversion class
+    new TestDataTypeTableSource(
+      TestDataTypeTableSourceFactory.tableSchema, TestDataTypeTableSourceFactory.data)
+  }
+}
+
+object TestDataTypeTableSourceFactory {
+  var data: Seq[Row] = null
+  var tableSchema: TableSchema = null
+
+  def setData(d: Seq[Row]): Unit = {
+    data = d
+  }
+
+  def setTableSchema(schema: TableSchema): Unit = {
+    tableSchema = schema
+  }
+
+  def clear(): Unit = {
+    data = null
+    tableSchema = null
+  }
 }
 
 class TestDataTypeTableSourceWithTime(

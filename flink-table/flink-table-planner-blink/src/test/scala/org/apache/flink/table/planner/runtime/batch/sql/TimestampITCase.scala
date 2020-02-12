@@ -22,12 +22,13 @@ import org.apache.flink.table.api.{DataTypes, TableSchema}
 import org.apache.flink.table.planner.runtime.utils.BatchTestBase
 import org.apache.flink.table.planner.runtime.utils.BatchTestBase.row
 import org.apache.flink.table.planner.utils.DateTimeTestUtil._
-import org.apache.flink.table.planner.utils.TestDataTypeTableSource
+import org.apache.flink.table.planner.utils.{TestDataTypeTableSource, TestDataTypeTableSourceFactory}
 import org.apache.flink.types.Row
 import org.junit.Test
-
 import java.sql.Timestamp
 import java.time.{Instant, LocalDateTime, ZoneId}
+
+import org.apache.flink.table.descriptors.{CustomConnectorDescriptor, Schema}
 
 import scala.collection.mutable
 
@@ -113,10 +114,18 @@ class TimestampITCase extends BatchTestBase {
         timestampsWithMilli(i), instantsOfDateTime(i), instantsOfTimestamp(i))
     }
 
-    val tableSource = new TestDataTypeTableSource(
-      tableSchema,
-      data.seq)
-    tEnv.registerTableSource("T", tableSource)
+//    val tableSource = new TestDataTypeTableSource(
+//      tableSchema,
+//      data.seq)
+//    tEnv.registerTableSource("T", tableSource)
+
+    TestDataTypeTableSourceFactory.setData(data.seq)
+    TestDataTypeTableSourceFactory.setTableSchema(tableSchema)
+
+    // Use TableEnvironment.connect() to register this temporary table
+    tEnv.connect(new CustomConnectorDescriptor("TestDataTypeTableSource", 1, false))
+      .withSchema(new Schema().schema(tableSchema))
+      .createTemporaryTable("T")
   }
 
   @Test
