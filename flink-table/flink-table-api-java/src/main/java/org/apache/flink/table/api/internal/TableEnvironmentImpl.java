@@ -89,10 +89,12 @@ import org.apache.flink.table.operations.ddl.CreateCatalogOperation;
 import org.apache.flink.table.operations.ddl.CreateDatabaseOperation;
 import org.apache.flink.table.operations.ddl.CreateTableOperation;
 import org.apache.flink.table.operations.ddl.CreateTempSystemFunctionOperation;
+import org.apache.flink.table.operations.ddl.CreateViewOperation;
 import org.apache.flink.table.operations.ddl.DropCatalogFunctionOperation;
 import org.apache.flink.table.operations.ddl.DropDatabaseOperation;
 import org.apache.flink.table.operations.ddl.DropTableOperation;
 import org.apache.flink.table.operations.ddl.DropTempSystemFunctionOperation;
+import org.apache.flink.table.operations.ddl.DropViewOperation;
 import org.apache.flink.table.operations.utils.OperationTreeBuilder;
 import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.table.sources.TableSource;
@@ -673,6 +675,17 @@ public class TableEnvironmentImpl implements TableEnvironment {
 			UseDatabaseOperation useDatabaseOperation = (UseDatabaseOperation) operation;
 			catalogManager.setCurrentCatalog(useDatabaseOperation.getCatalogName());
 			catalogManager.setCurrentDatabase(useDatabaseOperation.getDatabaseName());
+		} else if (operation instanceof CreateViewOperation) {
+			CreateViewOperation createViewOperation = (CreateViewOperation) operation;
+			catalogManager.createTable(
+				createViewOperation.getCatalogView(),
+				createViewOperation.getViewIdentifier(),
+				createViewOperation.isIgnoreIfExists());
+		} else if (operation instanceof DropViewOperation) {
+			DropViewOperation dropViewOperation = (DropViewOperation) operation;
+			catalogManager.dropTable(
+				dropViewOperation.getViewIdentifier(),
+				dropViewOperation.isIfExists());
 		} else {
 			throw new TableException(UNSUPPORTED_QUERY_IN_SQL_UPDATE_MSG);
 		}

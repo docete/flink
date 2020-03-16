@@ -93,6 +93,10 @@ public class SqlCreateView extends SqlCreate implements ExtendedSqlNode {
 		return Optional.ofNullable(comment);
 	}
 
+	public boolean isIfNotExists() {
+		return ifNotExists;
+	}
+
 	@Override
 	public void unparse(SqlWriter writer, int leftPrec, int rightPrec) {
 		writer.keyword("CREATE");
@@ -124,5 +128,9 @@ public class SqlCreateView extends SqlCreate implements ExtendedSqlNode {
 	@Override
 	public void validate() throws SqlValidateException {
 		// no-op
+	}
+
+	public String[] fullViewName() {
+		return viewName.names.toArray(new String[0]);
 	}
 }
