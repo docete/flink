@@ -628,6 +628,15 @@ abstract class TableEnvImpl(
       case useDatabaseOperation: UseDatabaseOperation =>
         catalogManager.setCurrentCatalog(useDatabaseOperation.getCatalogName)
         catalogManager.setCurrentDatabase(useDatabaseOperation.getDatabaseName)
+      case createViewOperation: CreateViewOperation =>
+        catalogManager.createTable(
+          createViewOperation.getCatalogView,
+          createViewOperation.getViewIdentifier,
+          createViewOperation.isIgnoreIfExists)
+      case dropViewOperation: DropViewOperation =>
+        catalogManager.dropTable(
+          dropViewOperation.getViewIdentifier,
+          dropViewOperation.isIfExists)
       case _ => throw new TableException(UNSUPPORTED_QUERY_IN_SQL_UPDATE_MSG)
     }
   }
