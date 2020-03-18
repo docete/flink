@@ -23,14 +23,14 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.scala.{BatchTableEnvironment, StreamTableEnvironment}
 import org.apache.flink.table.api.{TableEnvironment, ValidationException}
 import org.apache.flink.table.factories.utils.TestCollectionTableFactory
+import org.apache.flink.table.sqlexec.SqlConversionException
+import org.apache.flink.test.util.AbstractTestBase
 import org.apache.flink.types.Row
 import org.junit.Assert.{assertEquals, fail}
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.{Before, Ignore, Test}
 import java.util
-
-import org.apache.flink.test.util.AbstractTestBase
 
 import scala.collection.JavaConversions._
 
@@ -834,6 +834,29 @@ class CatalogTableITCase(isStreaming: Boolean) extends AbstractTestBase {
     assert(tableEnv.listTables().sameElements(Array[String]("T1", "T2")))
     tableEnv.sqlUpdate("DROP VIEW IF EXISTS default_catalog1.default_database1.T2")
     assert(tableEnv.listTables().sameElements(Array[String]("T1", "T2")))
+  }
+
+  @Test(expected = classOf[SqlConversionException])
+  def testCreateViewOnTemporaryTable(): Unit = {
+    val sourceDDL =
+      """
+        |CREATE TABLE T1(
+        |  a int,
+        |  b int
+        |) with (
+        |  'connector' = 'COLLECTION'
+        |)
+      """.stripMargin
+
+    tableEnv.sqlUpdate(sourceDDL)
+    val tbl = tableEnv.sqlQuery("SELECT * FROM T1")
+    tableEnv.createTemporaryView("T2", tbl)
+
+    val viewDDL =
+      """
+        |CREATE VIEW T3(c, d) AS SELECT a, b FROM T2
+      """.stripMargin
+    tableEnv.sqlUpdate(viewDDL)
   }
 }
 

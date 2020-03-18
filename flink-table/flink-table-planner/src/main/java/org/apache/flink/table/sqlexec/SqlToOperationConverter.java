@@ -87,6 +87,7 @@ import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
+import org.apache.calcite.sql.util.SqlBasicVisitor;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -437,6 +438,13 @@ public class SqlToOperationConverter {
 		final SqlNodeList fieldList = sqlCreateView.getFieldList();
 
 		SqlNode validateQuery = flinkPlanner.validate(query);
+
+		TemporaryTableChecker checker = new TemporaryTableChecker(catalogManager);
+		validateQuery.accept(checker);
+		if (checker.containsTemporaryTable()) {
+			throw new SqlConversionException("View definition contains temporary tables.");
+		}
+
 		PlannerQueryOperation operation = toQueryOperation(flinkPlanner, validateQuery);
 		TableSchema schema = operation.getTableSchema();
 
@@ -567,5 +575,35 @@ public class SqlToOperationConverter {
 			.withUnquotedCasing(parserConfig.unquotedCasing())
 			.withIdentifierQuoteString(parserConfig.quoting().string));
 		return sqlNode.toSqlString(dialect).getSql();
+	}
+
+	private class TemporaryTableChecker extends SqlBasicVisitor<Void> {
+
+		private final CatalogManager catalogManager;
+
+		private boolean containsTemporaryTable = false;
+
+		TemporaryTableChecker(CatalogManager catalogManager) {
+			this.catalogManager = catalogManager;
+		}
+
+		@Override
+		public Void visit(SqlIdentifier id) {
+			final UnresolvedIdentifier unresolvedIdentifier =
+				UnresolvedIdentifier.of(id.names.toArray(new String[0]));
+			final ObjectIdentifier identifier = catalogManager.qualifyIdentifier(unresolvedIdentifier);
+
+			Optional<CatalogManager.TableLookupResult> result = this.catalogManager.getTable(identifier);
+			if (result.isPresent() && result.get().isTemporary()) {
+				containsTemporaryTable = true;
+				return null;
+			}
+
+			return super.visit(id);
+		}
+
+		boolean containsTemporaryTable() {
+			return containsTemporaryTable;
+		}
 	}
 }
