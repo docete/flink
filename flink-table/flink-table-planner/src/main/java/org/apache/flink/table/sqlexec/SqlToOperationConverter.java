@@ -18,6 +18,10 @@
 
 package org.apache.flink.table.sqlexec;
 
+import org.apache.calcite.sql.SqlCall;
+import org.apache.calcite.sql.SqlJoin;
+import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.SqlWith;
 import org.apache.flink.sql.parser.ddl.SqlAlterDatabase;
 import org.apache.flink.sql.parser.ddl.SqlAlterFunction;
 import org.apache.flink.sql.parser.ddl.SqlAlterTable;
@@ -585,6 +589,19 @@ public class SqlToOperationConverter {
 
 		TemporaryTableChecker(CatalogManager catalogManager) {
 			this.catalogManager = catalogManager;
+		}
+
+		@Override
+		public Void visit(SqlCall call) {
+			if (call instanceof SqlSelect) {
+				return ((SqlSelect) call).getFrom().accept(this);
+			} else if (call instanceof SqlJoin) {
+				((SqlJoin) call).getLeft().accept(this);
+				((SqlJoin) call).getRight().accept(this);
+				return null;
+			} else {
+				return call.getOperator().acceptCall(this, call);
+			}
 		}
 
 		@Override
