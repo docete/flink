@@ -29,17 +29,17 @@ import org.apache.flink.table.planner.utils.DateTimeTestUtil.localDateTime
 import org.apache.flink.test.util.AbstractTestBase
 import org.apache.flink.types.Row
 import org.apache.flink.util.FileUtils
-
 import org.junit.Assert.{assertEquals, fail}
 import org.junit.rules.ExpectedException
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.{Before, Ignore, Rule, Test}
-
 import java.io.File
 import java.util
 import java.math.{BigDecimal => JBigDecimal}
 import java.net.URI
+
+import org.apache.flink.table.planner.operations.SqlConversionException
 
 import scala.collection.JavaConversions._
 
@@ -1125,6 +1125,30 @@ class CatalogTableITCase(isStreamingMode: Boolean) extends AbstractTestBase {
     assert(tableEnv.listTables().sameElements(Array[String]("T1", "T2")))
     tableEnv.sqlUpdate("DROP VIEW IF EXISTS default_catalog1.default_database1.T2")
     assert(tableEnv.listTables().sameElements(Array[String]("T1", "T2")))
+  }
+
+  @Test(expected = classOf[SqlConversionException])
+  def testCreateViewOnTemporaryTable(): Unit = {
+    val sourceDDL =
+      """
+        |CREATE TABLE T1(
+        |  a int,
+        |  b varchar,
+        |  c int
+        |) with (
+        |  'connector' = 'COLLECTION'
+        |)
+      """.stripMargin
+
+    tableEnv.sqlUpdate(sourceDDL)
+    val tbl = tableEnv.sqlQuery("SELECT * FROM T1")
+    tableEnv.createTemporaryView("T2", tbl)
+
+    val viewDDL =
+      """
+        |CREATE VIEW T3(d, e, f) AS SELECT a, b, c FROM T2
+      """.stripMargin
+    tableEnv.sqlUpdate(viewDDL)
   }
 }
 

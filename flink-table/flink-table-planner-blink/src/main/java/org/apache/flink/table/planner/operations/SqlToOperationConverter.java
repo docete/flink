@@ -77,10 +77,16 @@ import org.apache.flink.table.operations.ddl.DropTempSystemFunctionOperation;
 import org.apache.flink.table.operations.ddl.DropViewOperation;
 import org.apache.flink.table.planner.calcite.FlinkPlannerImpl;
 import org.apache.flink.table.planner.calcite.FlinkTypeFactory;
+import org.apache.flink.table.planner.catalog.CatalogSchemaTable;
+import org.apache.flink.table.planner.catalog.SqlCatalogViewTable;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.utils.TypeConversions;
 import org.apache.flink.util.StringUtils;
 
+import org.apache.calcite.plan.RelOptTable;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelVisitor;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlBasicCall;
@@ -474,6 +480,12 @@ public class SqlToOperationConverter {
 		final SqlNodeList fieldList = sqlCreateView.getFieldList();
 
 		SqlNode validateQuery = flinkPlanner.validate(query);
+
+		// check if the references contain temporary tables:
+		if (containsTemporaryTable(flinkPlanner, validateQuery)) {
+			throw new SqlConversionException("View definition contains temporary tables.");
+		}
+
 		PlannerQueryOperation operation = toQueryOperation(flinkPlanner, validateQuery);
 		TableSchema schema = operation.getTableSchema();
 
@@ -620,5 +632,42 @@ public class SqlToOperationConverter {
 		// transform to a relational tree
 		RelRoot relational = planner.rel(validated);
 		return new PlannerQueryOperation(relational.project());
+	}
+
+	private boolean containsTemporaryTable(FlinkPlannerImpl planner, SqlNode validated) {
+		RelRoot relation = planner.rel(validated, false);
+		return new TemporaryTableChecker().containsTemporaryTable(relation.rel);
+	}
+
+	private class TemporaryTableChecker extends RelVisitor {
+
+		private boolean containsTemporaryTable = false;
+
+		@Override
+		public void visit(RelNode node, int ordinal, RelNode parent) {
+			if (node instanceof TableScan) {
+				TableScan scan = (TableScan) node;
+				RelOptTable table = scan.getTable();
+				if (table instanceof CatalogSchemaTable) {
+					CatalogSchemaTable tbl = (CatalogSchemaTable) table;
+					if (tbl.isTemporary()) {
+						containsTemporaryTable = true;
+						return;
+					}
+				} else if (table instanceof SqlCatalogViewTable) {
+					// TODO: temporary views?
+					return;
+				} else {
+					containsTemporaryTable = true;
+					return;
+				}
+			}
+			super.visit(node, ordinal, parent);
+		}
+
+		boolean containsTemporaryTable(RelNode node) {
+			go(node);
+			return containsTemporaryTable;
+		}
 	}
 }

@@ -132,19 +132,38 @@ class FlinkPlannerImpl(
   }
 
   def rel(validatedSqlNode: SqlNode): RelRoot = {
-    rel(validatedSqlNode, getOrCreateSqlValidator())
+    rel(validatedSqlNode, true)
   }
 
-  private def rel(validatedSqlNode: SqlNode, sqlValidator: FlinkCalciteSqlValidator) = {
+  def rel(validatedSqlNode: SqlNode, convertTableAccess: Boolean): RelRoot = {
+    rel(validatedSqlNode, getOrCreateSqlValidator(), convertTableAccess)
+  }
+
+  private def rel(
+      validatedSqlNode: SqlNode,
+      sqlValidator: FlinkCalciteSqlValidator,
+      convertTableAccess: Boolean) = {
     try {
       assert(validatedSqlNode != null)
+      val sqlToRelConfig =
+        if (convertTableAccess) {
+          sqlToRelConverterConfig
+        } else {
+          SqlToRelConverter.configBuilder
+            .withTrimUnusedFields(false)
+            .withConvertTableAccess(false)
+            .withInSubQueryThreshold(Int.MaxValue)
+            .withExpand(false)
+            .withRelBuilderFactory(FlinkRelFactories.FLINK_REL_BUILDER)
+            .build()
+        }
       val sqlToRelConverter: SqlToRelConverter = new SqlToRelConverter(
         createToRelContext(),
         sqlValidator,
         sqlValidator.getCatalogReader.unwrap(classOf[CalciteCatalogReader]),
         cluster,
         convertletTable,
-        sqlToRelConverterConfig)
+        sqlToRelConfig)
       sqlToRelConverter.convertQuery(validatedSqlNode, false, true)
       // we disable automatic flattening in order to let composite types pass without modification
       // we might enable it again once Calcite has better support for structured types
@@ -186,7 +205,7 @@ class FlinkPlannerImpl(
       )
       val validator = createSqlValidator(readerWithPathAdjusted)
       val validated = validate(parsed, validator)
-      rel(validated, validator)
+      rel(validated, validator, true)
     }
 
     override def getCluster: RelOptCluster = cluster
